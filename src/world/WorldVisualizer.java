@@ -1,6 +1,8 @@
 package world;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
@@ -8,11 +10,16 @@ public class WorldVisualizer {
   static int screenWidth = 500;
   static int screenHeight = 500;
 
-  private static class WorldPanel extends JPanel {
+  private static class WorldPanel extends JPanel implements ChangeListener {
 
     private BufferedImage mImage;
     private Graphics mGraphics;
     private WorldMap mMap;
+
+    private final int xBlockWidth;
+    private final int yBlockWidth;
+    private final int xStartBuffer;
+    private final int yStartBuffer;
 
     private WorldPanel(WorldMap map) {
       mImage = new BufferedImage(
@@ -23,6 +30,21 @@ public class WorldVisualizer {
       mGraphics.setColor(Color.WHITE);
       mGraphics.fillRect(0, 0, screenWidth, screenHeight);
       mMap = map;
+
+      int sliderHeight = 20;
+      int numR = mMap.getWidth();
+      int numC = mMap.getHeight();
+      xBlockWidth = (screenWidth - 2 * 25) / numR;
+      yBlockWidth = (screenHeight - 2 * 25 - sliderHeight) / numC;
+      xStartBuffer = (screenWidth - xBlockWidth * numR) / 2;
+      yStartBuffer = (screenHeight - yBlockWidth * numC) / 2 + sliderHeight;
+
+      JSlider elevationSliceSlider = new JSlider(0, mMap.getMaxHeight());
+      elevationSliceSlider.setValue(mMap.getMaxHeight());
+      elevationSliceSlider.setMajorTickSpacing(5);
+      elevationSliceSlider.setPaintLabels(true);
+      elevationSliceSlider.addChangeListener(this);
+      add(elevationSliceSlider);
     }
 
     public void paintComponent(Graphics g) {
@@ -30,22 +52,21 @@ public class WorldVisualizer {
     }
 
     public void drawMap() {
+      for (int r = 0; r < mMap.getWidth(); r++) {
+        for (int c = 0; c < mMap.getHeight(); c++) {
+          drawBlock(r, c);
+        }
+      }
+    }
 
-      int numR = mMap.getWidth();
-      int numC = mMap.getHeight();
-
-      final int minXBuffer = 25;
-      final int minYBuffer = 25;
-      final int xWidth = (screenWidth - 2 * minXBuffer) / numR;
-      final int yWidth = (screenHeight - 2 * minYBuffer) / numC;
-
-      int xBuffer = (screenWidth - xWidth * numR) / 2;
-      int yBuffer = (screenHeight - yWidth * numC) / 2;
-
-      for (int r = 0; r < numR; r++) {
-        for (int c = 0; c < numC; c++) {
-          setColorForTile(r, c);
-          mGraphics.fillRect(xBuffer + r * xWidth, yBuffer + c * yWidth, xWidth, yWidth);
+    private void drawSlice(int elevation) {
+      mGraphics.setColor(Color.WHITE);
+      mGraphics.fillRect(0, 0, screenWidth, screenHeight);
+      for (int r = 0; r < mMap.getWidth(); r++) {
+        for (int c = 0; c < mMap.getHeight(); c++) {
+          if (mMap.elevationMap[r][c] <= elevation) {
+            drawBlock(r, c);
+          }
         }
       }
     }
@@ -57,6 +78,22 @@ public class WorldVisualizer {
           (int) (alpha * terrainColor.getRed()),
           (int) (alpha * terrainColor.getGreen()),
           (int) (alpha * terrainColor.getBlue())));
+    }
+
+    private void drawBlock(int r, int c) {
+      setColorForTile(r, c);
+      mGraphics.fillRect(
+          xStartBuffer + r * xBlockWidth,
+          yStartBuffer + c * yBlockWidth,
+          xBlockWidth,
+          yBlockWidth);
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+      JSlider slider = (JSlider) e.getSource();
+      drawSlice(slider.getValue());
+      repaint();
     }
   }
 
