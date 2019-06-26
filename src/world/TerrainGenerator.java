@@ -94,6 +94,7 @@ public class TerrainGenerator {
           continue;
         }
         numImmediateNeighbors++;
+        allNeighborsHeightSum += map.elevationMap[i][j];
         if (map.terrainMap[i][j] != TerrainType.WATER) {
           numValidNeighbors++;
           validNeighborsHeightSum += map.elevationMap[i][j];
