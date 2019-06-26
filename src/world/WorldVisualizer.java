@@ -21,7 +21,7 @@ public class WorldVisualizer {
           BufferedImage.TYPE_INT_RGB);
       mGraphics = mImage.getGraphics();
       mGraphics.setColor(Color.WHITE);
-      mGraphics.fillRect(0,0,screenWidth,screenHeight);
+      mGraphics.fillRect(0, 0, screenWidth, screenHeight);
       mMap = map;
     }
 
@@ -52,8 +52,11 @@ public class WorldVisualizer {
 
     private void setColorForTile(int r, int c) {
       float alpha = 0.75f * mMap.elevationMap[r][c] / mMap.getMaxHeight();
-      int grayScaleValue = (int) (255 * alpha);
-      mGraphics.setColor(new Color(grayScaleValue, grayScaleValue, grayScaleValue));
+      Color terrainColor = TerrainType.getColorForType(mMap.terrainMap[r][c]);
+      mGraphics.setColor(new Color(
+          (int) (alpha * terrainColor.getRed()),
+          (int) (alpha * terrainColor.getGreen()),
+          (int) (alpha * terrainColor.getBlue())));
     }
   }
 

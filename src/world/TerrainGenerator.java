@@ -20,13 +20,28 @@ public class TerrainGenerator {
       smooth(terrainElevation, r, c, dE / 2);
     }
 
-    return new WorldMap(id, terrainType, terrainElevation);
+    WorldMap worldMap = new WorldMap(id, terrainType, terrainElevation);
+
+    floodWaterTable(worldMap, worldMap.getMaxHeight() / 3);
+
+    return worldMap;
   }
 
-  private static void smooth(int[][] terrainElevation, int r, int c, int dESmoothAmount) {
-    // roughly simulate grain of sand distribution: adding to one point will redistribute some to
-    // nearby tiles. The further the tiles are away from the source, the less they will receive.
+  private static void floodWaterTable(WorldMap map, int waterTableHeight) {
+    for (int r = 0; r < map.getWidth(); r++) {
+      for (int c = 0; c < map.getHeight(); c++) {
+        if (map.elevationMap[r][c] <= waterTableHeight) {
+          map.terrainMap[r][c] = TerrainType.WATER;
+        }
+      }
+    }
+  }
 
+  /**
+   * Roughly simulate grain of sand distribution: adding to one point will redistribute some to
+   * nearby tiles. The further the tiles are away from the source, the less they will receive.
+   */
+  private static void smooth(int[][] terrainElevation, int r, int c, int dESmoothAmount) {
     int i, j, ddE;
     for (int dR = -dESmoothAmount; dR <= dESmoothAmount; dR++) {
       for (int dC = -dESmoothAmount; dC <= dESmoothAmount; dC++) {
