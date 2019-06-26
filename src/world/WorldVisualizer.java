@@ -4,13 +4,15 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
 
 public class WorldVisualizer {
-  static int screenWidth = 500;
-  static int screenHeight = 500;
+  private static int screenWidth = 500;
+  private static int screenHeight = 500;
 
-  private static class WorldPanel extends JPanel implements ChangeListener {
+  private static class WorldPanel extends JPanel implements ChangeListener, ItemListener {
 
     private BufferedImage mImage;
     private Graphics mGraphics;
@@ -20,6 +22,9 @@ public class WorldVisualizer {
     private final int yBlockWidth;
     private final int xStartBuffer;
     private final int yStartBuffer;
+
+    private JSlider elevationSliceSlider;
+    private JCheckBox seeAllBelowCheckBox;
 
     private WorldPanel(WorldMap map) {
       mImage = new BufferedImage(
@@ -39,19 +44,25 @@ public class WorldVisualizer {
       xStartBuffer = (screenWidth - xBlockWidth * numR) / 2;
       yStartBuffer = (screenHeight - yBlockWidth * numC) / 2 + sliderHeight;
 
-      JSlider elevationSliceSlider = new JSlider(0, mMap.getMaxHeight());
+      elevationSliceSlider = new JSlider(0, mMap.getMaxHeight());
       elevationSliceSlider.setValue(mMap.getMaxHeight());
       elevationSliceSlider.setMajorTickSpacing(5);
       elevationSliceSlider.setPaintLabels(true);
       elevationSliceSlider.addChangeListener(this);
+
+      seeAllBelowCheckBox = new JCheckBox("See all below");
+      seeAllBelowCheckBox.setSelected(true);
+      seeAllBelowCheckBox.addItemListener(this);
+
       add(elevationSliceSlider);
+      add(seeAllBelowCheckBox);
     }
 
     public void paintComponent(Graphics g) {
       g.drawImage(mImage, 0, 0, screenWidth, screenHeight, null);
     }
 
-    public void drawMap() {
+    private void drawMap() {
       for (int r = 0; r < mMap.getWidth(); r++) {
         for (int c = 0; c < mMap.getHeight(); c++) {
           drawBlock(r, c);
@@ -64,7 +75,10 @@ public class WorldVisualizer {
       mGraphics.fillRect(0, 0, screenWidth, screenHeight);
       for (int r = 0; r < mMap.getWidth(); r++) {
         for (int c = 0; c < mMap.getHeight(); c++) {
-          if (mMap.elevationMap[r][c] <= elevation) {
+
+          if (seeAllBelowCheckBox.isSelected()
+              ? mMap.elevationMap[r][c] <= elevation
+              : mMap.elevationMap[r][c] == elevation) {
             drawBlock(r, c);
           }
         }
@@ -91,9 +105,13 @@ public class WorldVisualizer {
 
     @Override
     public void stateChanged(ChangeEvent e) {
-      JSlider slider = (JSlider) e.getSource();
-      drawSlice(slider.getValue());
+      drawSlice(elevationSliceSlider.getValue());
       repaint();
+    }
+
+    @Override
+    public void itemStateChanged(ItemEvent e) {
+      stateChanged(null);
     }
   }
 

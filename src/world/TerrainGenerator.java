@@ -23,7 +23,7 @@ public class TerrainGenerator {
     WorldMap worldMap = new WorldMap(id, terrainType, terrainElevation);
 
     floodWaterTable(worldMap, worldMap.getMaxHeight() / 3);
-
+    flatten(worldMap, 3);
     return worldMap;
   }
 
@@ -37,6 +37,79 @@ public class TerrainGenerator {
     }
   }
 
+  private static void flatten(WorldMap map, int checkRadius) {
+    for (int r = 0; r < map.getWidth(); r++) {
+      for (int c = 0; c < map.getHeight(); c++) {
+        if (map.terrainMap[r][c] != TerrainType.WATER) {
+          flattenHelper(map, checkRadius, r, c);
+        }
+      }
+    }
+  }
+
+  /**
+   * Reduce the number of standout bumps / jaggedness by reducing number of tiny hills (mini-maxes).
+   * New value of point will be an average of nearby valid (TerrainType.GROUND) neighbors.
+   * <p>
+   * If there are no valid neighbors to find the new terrain height, then we must be surrounded by
+   * water and convert the terrain into water and take the average depth of water neighbors.
+   */
+  private static void flattenHelper(
+      WorldMap map,
+      int checkRadius,
+      int r,
+      int c) {
+    int i, j;
+    int numValidNeighbors = 0;
+    int numNeighborsLower = 0;
+    for (int dR = -checkRadius; dR <= checkRadius; dR++) {
+      for (int dC = -checkRadius; dC <= checkRadius; dC++) {
+        i = r + dR;
+        j = c + dC;
+        if (ifInvalidIndex(i, j, map.getWidth(), map.getHeight()) || (dR == 0 && dC == 0)) {
+          continue;
+        }
+        if (map.terrainMap[i][j] != TerrainType.WATER) {
+          numValidNeighbors++;
+          if (map.elevationMap[i][j] < map.elevationMap[r][c]) {
+            numNeighborsLower++;
+          }
+        }
+      }
+    }
+
+    // only flatten if most of neighbors are lower
+    if (numValidNeighbors > 0 && (numNeighborsLower / numValidNeighbors < 0.5)) {
+      return;
+    }
+    numValidNeighbors = 0;
+    int validNeighborsHeightSum = 0;
+    int allNeighborsHeightSum = 0;
+    int numImmediateNeighbors = 0;
+    for (int dR = -1; dR <= 1; dR++) {
+      for (int dC = -1; dC <= 1; dC++) {
+        i = r + dR;
+        j = c + dC;
+        if (ifInvalidIndex(i, j, map.getWidth(), map.getHeight()) || (i == r && j == c)) {
+          continue;
+        }
+        numImmediateNeighbors++;
+        if (map.terrainMap[i][j] != TerrainType.WATER) {
+          numValidNeighbors++;
+          validNeighborsHeightSum += map.elevationMap[i][j];
+        }
+      }
+    }
+    if (numValidNeighbors > 0) {
+      map.elevationMap[r][c] = validNeighborsHeightSum / numValidNeighbors;
+    } else {
+      // surrounded by water, will update terrain type to avoid one-block islands
+      map.elevationMap[r][c] = allNeighborsHeightSum / numImmediateNeighbors;
+      map.terrainMap[r][c] = TerrainType.WATER;
+    }
+
+  }
+
   /**
    * Roughly simulate grain of sand distribution: adding to one point will redistribute some to
    * nearby tiles. The further the tiles are away from the source, the less they will receive.
@@ -47,9 +120,8 @@ public class TerrainGenerator {
       for (int dC = -dESmoothAmount; dC <= dESmoothAmount; dC++) {
         i = r + dR;
         j = c + dC;
-        if (i < 0 || j < 0 || i >= terrainElevation.length || j >= terrainElevation[0].length) {
-          continue;
-        } else if (dR == 0 && dC == 0) {
+        if (ifInvalidIndex(i, j, terrainElevation.length, terrainElevation[0].length)
+            || (dR == 0 && dC == 0)) {
           continue;
         }
 
@@ -61,6 +133,10 @@ public class TerrainGenerator {
         }
       }
     }
+  }
+
+  private static boolean ifInvalidIndex(int r, int c, int maxR, int maxC) {
+    return r < 0 || c < 0 || r >= maxR || c >= maxC;
   }
 
   private static class RNG {
