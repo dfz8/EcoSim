@@ -1,5 +1,7 @@
 package world;
 
+import util.Rect2d;
+
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -96,11 +98,14 @@ public class WorldVisualizer {
 
     private void drawBlock(int r, int c) {
       setColorForTile(r, c);
-      mGraphics.fillRect(
-          xStartBuffer + r * xBlockWidth,
-          yStartBuffer + c * yBlockWidth,
-          xBlockWidth,
-          yBlockWidth);
+
+      int x = xStartBuffer + r * xBlockWidth;
+      int y = yStartBuffer + c * yBlockWidth;
+
+      mGraphics.fillRect(x, y, xBlockWidth, yBlockWidth);
+      if (mMap.entityMap[r][c] != null) {
+        mMap.entityMap[r][c].draw(mGraphics, new Rect2d(x, y, xBlockWidth, yBlockWidth));
+      }
     }
 
     @Override

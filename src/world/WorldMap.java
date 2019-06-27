@@ -1,5 +1,7 @@
 package world;
 
+import entity.Entity;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -9,6 +11,7 @@ public class WorldMap {
   private final String mMapId;
   int[][] terrainMap;
   int[][] elevationMap;
+  Entity[][] entityMap;
 
   private int mMaxHeight;
 
@@ -16,11 +19,12 @@ public class WorldMap {
     mMapId = mapId;
     this.terrainMap = terrainMap;
     this.elevationMap = elevationMap;
+    this.entityMap = new Entity[terrainMap.length][terrainMap[0].length];
 
-    calculateMetaData();
+    updateMetadata();
   }
 
-  private void calculateMetaData() {
+  private void updateMetadata() {
     for (int r = 0; r < getWidth(); r++) {
       for (int c = 0; c < getHeight(); c++) {
         if (elevationMap[r][c] > mMaxHeight) {

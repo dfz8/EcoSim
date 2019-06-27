@@ -9,7 +9,6 @@ public class TerrainType {
 
   static final int WATER = -1;
 
-
   private static Map<Integer, Color> mColorMap;
 
   public static Color getColorForType(int terrain) {
