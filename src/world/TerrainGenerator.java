@@ -11,6 +11,8 @@ public class TerrainGenerator {
     int[][] terrainElevation = new int[width][height];
 
     int heightSeeds = width * height / 2;
+    log("World dimen: " + width + " x " + height);
+    log("Height Seeds: " + height);
     int r, c, dE;
     for (int i = 0; i < heightSeeds; i++) {
       r = rGen.getRandomInt();
@@ -28,23 +30,29 @@ public class TerrainGenerator {
   }
 
   private static void floodWaterTable(WorldMap map, int waterTableHeight) {
+    int waterCount = 0;
     for (int r = 0; r < map.getWidth(); r++) {
       for (int c = 0; c < map.getHeight(); c++) {
         if (map.elevationMap[r][c] <= waterTableHeight) {
           map.terrainMap[r][c] = TerrainType.WATER;
+          waterCount++;
         }
       }
     }
+    log("Tiles converted to water: " + waterCount + " (" +
+        (100 * waterCount / map.getWidth() / map.getHeight()) * 1.0 + "%)");
   }
 
   private static void flatten(WorldMap map, int checkRadius) {
+    int flattenedAreaCount = 0;
     for (int r = 0; r < map.getWidth(); r++) {
       for (int c = 0; c < map.getHeight(); c++) {
         if (map.terrainMap[r][c] != TerrainType.WATER) {
-          flattenHelper(map, checkRadius, r, c);
+          flattenedAreaCount += flattenHelper(map, checkRadius, r, c);
         }
       }
     }
+    log("Flattened: " + flattenedAreaCount);
   }
 
   /**
@@ -54,7 +62,7 @@ public class TerrainGenerator {
    * If there are no valid neighbors to find the new terrain height, then we must be surrounded by
    * water and convert the terrain into water and take the average depth of water neighbors.
    */
-  private static void flattenHelper(
+  private static int flattenHelper(
       WorldMap map,
       int checkRadius,
       int r,
@@ -80,7 +88,7 @@ public class TerrainGenerator {
 
     // only flatten if most of neighbors are lower
     if (numValidNeighbors > 0 && (numNeighborsLower / numValidNeighbors < 0.5)) {
-      return;
+      return 0;
     }
     numValidNeighbors = 0;
     int validNeighborsHeightSum = 0;
@@ -108,7 +116,7 @@ public class TerrainGenerator {
       map.elevationMap[r][c] = allNeighborsHeightSum / numImmediateNeighbors;
       map.terrainMap[r][c] = TerrainType.WATER;
     }
-
+    return 1;
   }
 
   /**
@@ -138,6 +146,10 @@ public class TerrainGenerator {
 
   private static boolean ifInvalidIndex(int r, int c, int maxR, int maxC) {
     return r < 0 || c < 0 || r >= maxR || c >= maxC;
+  }
+
+  private static void log(String s) {
+    System.out.println(s);
   }
 
   private static class RNG {

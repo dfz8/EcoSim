@@ -9,8 +9,8 @@ import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
 
 public class WorldVisualizer {
-  private static int screenWidth = 500;
-  private static int screenHeight = 500;
+  private static int screenWidth = 800;
+  private static int screenHeight = 800;
 
   private static class WorldPanel extends JPanel implements ChangeListener, ItemListener {
 
