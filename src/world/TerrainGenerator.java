@@ -1,6 +1,10 @@
 package world;
 
 import entity.PlantEntity;
+import util.WorldUtil;
+import util.Vec2d;
+
+import java.util.LinkedList;
 
 public class TerrainGenerator {
   private static RNG rGen;
@@ -52,7 +56,7 @@ public class TerrainGenerator {
       for (int dC = -dESmoothAmount; dC <= dESmoothAmount; dC++) {
         i = r + dR;
         j = c + dC;
-        if (ifInvalidIndex(i, j, terrainElevation.length, terrainElevation[0].length)
+        if (WorldUtil.ifInvalidIndex(i, j, terrainElevation.length, terrainElevation[0].length)
             || (dR == 0 && dC == 0)) {
           continue;
         }
@@ -100,23 +104,19 @@ public class TerrainGenerator {
    * <p>
    * If there are no valid neighbors to find the new terrain height, then we must be surrounded by
    * water and convert the terrain into water and take the average depth of water neighbors.
+   *
+   * @Returns the number of tiles changed.
    */
   private static int flattenHelper(WorldMap map, int checkRadius, int r, int c) {
-    int i, j;
+    LinkedList<Vec2d> nearbyAreas = WorldUtil.getValidNearbySquares(map, r, c, checkRadius);
+
     int numValidNeighbors = 0;
     int numNeighborsLower = 0;
-    for (int dR = -checkRadius; dR <= checkRadius; dR++) {
-      for (int dC = -checkRadius; dC <= checkRadius; dC++) {
-        i = r + dR;
-        j = c + dC;
-        if (ifInvalidIndex(i, j, map.getWidth(), map.getHeight()) || (dR == 0 && dC == 0)) {
-          continue;
-        }
-        if (map.terrainMap[i][j] != TerrainType.WATER) {
-          numValidNeighbors++;
-          if (map.elevationMap[i][j] < map.elevationMap[r][c]) {
-            numNeighborsLower++;
-          }
+    for (Vec2d vec : nearbyAreas) {
+      if (map.terrainMap[vec.x][vec.y] != TerrainType.WATER) {
+        numValidNeighbors++;
+        if (map.elevationMap[vec.x][vec.y] < map.elevationMap[r][c]) {
+          numNeighborsLower++;
         }
       }
     }
@@ -125,30 +125,24 @@ public class TerrainGenerator {
     if (numValidNeighbors > 0 && (numNeighborsLower / numValidNeighbors < 0.5)) {
       return 0;
     }
+
     numValidNeighbors = 0;
     int validNeighborsHeightSum = 0;
     int allNeighborsHeightSum = 0;
-    int numImmediateNeighbors = 0;
-    for (int dR = -1; dR <= 1; dR++) {
-      for (int dC = -1; dC <= 1; dC++) {
-        i = r + dR;
-        j = c + dC;
-        if (ifInvalidIndex(i, j, map.getWidth(), map.getHeight()) || (i == r && j == c)) {
-          continue;
-        }
-        numImmediateNeighbors++;
-        allNeighborsHeightSum += map.elevationMap[i][j];
-        if (map.terrainMap[i][j] != TerrainType.WATER) {
-          numValidNeighbors++;
-          validNeighborsHeightSum += map.elevationMap[i][j];
-        }
+    nearbyAreas = WorldUtil.getValidNearbySquares(map, r, c, checkRadius);
+    for (Vec2d vec : nearbyAreas) {
+      allNeighborsHeightSum += map.elevationMap[vec.x][vec.y];
+      if (map.terrainMap[vec.x][vec.y] != TerrainType.WATER) {
+        numValidNeighbors++;
+        validNeighborsHeightSum += map.elevationMap[vec.x][vec.y];
       }
     }
+
     if (numValidNeighbors > 0) {
       map.elevationMap[r][c] = validNeighborsHeightSum / numValidNeighbors;
     } else {
       // surrounded by water, will update terrain type to avoid one-block islands
-      map.elevationMap[r][c] = allNeighborsHeightSum / numImmediateNeighbors;
+      map.elevationMap[r][c] = allNeighborsHeightSum / nearbyAreas.size();
       map.terrainMap[r][c] = TerrainType.WATER;
     }
     return 1;
@@ -162,8 +156,8 @@ public class TerrainGenerator {
     for (int s = 0; s < seeds; s++) {
       r = rGen.getRandomInt();
       c = cGen.getRandomInt();
-      if (map.terrainMap[r][c] != TerrainType.WATER && map.entityMap[r][c] == null) {
-        map.entityMap[r][c] = new PlantEntity(r, c);
+      if (map.terrainMap[r][c] != TerrainType.WATER
+          && map.addEntity(new PlantEntity(map, r, c), r, c)) {
         successAdds++;
       }
     }
@@ -171,10 +165,6 @@ public class TerrainGenerator {
     log("Planted " + seeds + " seeds, " + successAdds + " germinated.");
   }
 
-
-  private static boolean ifInvalidIndex(int r, int c, int maxR, int maxC) {
-    return r < 0 || c < 0 || r >= maxR || c >= maxC;
-  }
 
   private static void log(String s) {
     System.out.println(s);

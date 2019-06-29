@@ -6,6 +6,8 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
@@ -14,7 +16,8 @@ public class WorldVisualizer {
   private static int screenWidth = 800;
   private static int screenHeight = 800;
 
-  private static class WorldPanel extends JPanel implements ChangeListener, ItemListener {
+  private static class WorldPanel extends JPanel implements ChangeListener,
+      ActionListener {
 
     private BufferedImage mImage;
     private Graphics mGraphics;
@@ -27,6 +30,9 @@ public class WorldVisualizer {
 
     private JSlider elevationSliceSlider;
     private JCheckBox seeAllBelowCheckBox;
+    private JButton stepButton;
+    private JLabel stepCountLabel;
+    private int timeStep;
 
     private WorldPanel(WorldMap map) {
       mImage = new BufferedImage(
@@ -54,10 +60,17 @@ public class WorldVisualizer {
 
       seeAllBelowCheckBox = new JCheckBox("See all below");
       seeAllBelowCheckBox.setSelected(true);
-      seeAllBelowCheckBox.addItemListener(this);
+      seeAllBelowCheckBox.addChangeListener(this);
+
+      timeStep = 0;
+      stepButton = new JButton("Step");
+      stepButton.addActionListener(this);
+      stepCountLabel = new JLabel("Time step: " + timeStep);
 
       add(elevationSliceSlider);
       add(seeAllBelowCheckBox);
+      add(stepButton);
+      add(stepCountLabel);
     }
 
     public void paintComponent(Graphics g) {
@@ -77,7 +90,6 @@ public class WorldVisualizer {
       mGraphics.fillRect(0, 0, screenWidth, screenHeight);
       for (int r = 0; r < mMap.getWidth(); r++) {
         for (int c = 0; c < mMap.getHeight(); c++) {
-
           if (seeAllBelowCheckBox.isSelected()
               ? mMap.elevationMap[r][c] <= elevation
               : mMap.elevationMap[r][c] == elevation) {
@@ -109,13 +121,18 @@ public class WorldVisualizer {
     }
 
     @Override
+    // Updates the graphics to reflect any changes that may have occurred.
     public void stateChanged(ChangeEvent e) {
       drawSlice(elevationSliceSlider.getValue());
       repaint();
     }
 
     @Override
-    public void itemStateChanged(ItemEvent e) {
+    // Update entities, and then update the visuals
+    public void actionPerformed(ActionEvent e) {
+      timeStep++;
+      stepCountLabel.setText("Time step: " + timeStep);
+      mMap.updateEntities();
       stateChanged(null);
     }
   }

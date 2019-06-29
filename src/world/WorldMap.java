@@ -6,12 +6,14 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.LinkedList;
 
 public class WorldMap {
   private final String mMapId;
-  int[][] terrainMap;
-  int[][] elevationMap;
-  Entity[][] entityMap;
+  public int[][] terrainMap;
+  public int[][] elevationMap;
+  public Entity[][] entityMap;
+  private LinkedList<Entity> entityList;
 
   private int mMaxHeight;
 
@@ -21,6 +23,7 @@ public class WorldMap {
     this.elevationMap = elevationMap;
     this.entityMap = new Entity[terrainMap.length][terrainMap[0].length];
 
+    entityList = new LinkedList<>();
     updateMetadata();
   }
 
@@ -60,6 +63,36 @@ public class WorldMap {
       out.close();
     } catch (IOException e) {
 
+    }
+  }
+
+
+  public boolean addEntity(Entity entity, int r, int c) {
+    if (entityMap[r][c] == null) {
+      entityMap[r][c] = entity;
+      entityList.add(entity);
+      return true;
+    }
+    return false;
+  }
+
+  public void updateEntities() {
+    LinkedList<Entity> entitiesToRemove = new LinkedList<>();
+    for (Entity entity : entityList) {
+      entity.update();
+      if(entity.getHealth() < 0) {
+        entitiesToRemove.add(entity);
+      }
+    }
+
+    for(Entity entity : entitiesToRemove) {
+      removeEntity(entity);
+    }
+  }
+
+  public void removeEntity(Entity entity) {
+    if (entityList.remove(entity)) {
+      entityMap[entity.getCurR()][entity.getCurC()] = null;
     }
   }
 }

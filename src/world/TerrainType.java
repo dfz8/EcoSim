@@ -5,9 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TerrainType {
-  static final int GROUND = 0;
+  public static final int GROUND = 0;
 
-  static final int WATER = -1;
+  public static final int WATER = -1;
 
   private static Map<Integer, Color> mColorMap;
 
