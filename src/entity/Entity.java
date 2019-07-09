@@ -22,7 +22,7 @@ public abstract class Entity {
     this.worldMap = worldMap;
     curR = initR;
     curC = initC;
-    age = 0;
+    age = 1;
     health = startingHealth;
   }
 

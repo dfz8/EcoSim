@@ -1,5 +1,6 @@
 package entity;
 
+import util.ColorUtil;
 import util.Rect2d;
 import util.Vec2d;
 import util.WorldUtil;
@@ -22,12 +23,62 @@ public class PlantEntity extends Entity {
 
   @Override
   public void draw(Graphics g, Rect2d drawRegion) {
-    if (getHealth() < 20) {
-      g.setColor(Color.YELLOW);
-    } else {
-      g.setColor(Color.GREEN);
+    // Plant color in growth is white --> green
+    // Plant health trends color to yellow then red.
+    switch (getGrowthStage()) {
+      case YOUTH:
+        int minYouthHealth = getAge() * getHealthIncrementForStage(GrowthStage.YOUTH);
+        float healthP = 1 - (1f * Math.min(getHealth(), minYouthHealth) / minYouthHealth);
+        g.setColor(
+            ColorUtil.interpolate(
+                ColorUtil.interpolate(
+                    Color.WHITE,
+                    Color.GREEN,
+                    1f * getAge() / getAgeTo(GrowthStage.MATURE)),
+                Color.YELLOW,
+                Color.RED,
+                healthP));
+        g.fillOval(drawRegion.x, drawRegion.y, drawRegion.width, drawRegion.height);
+        break;
+      case MATURE:
+        int minMatureHealth =
+            getAgeTo(GrowthStage.MATURE) * getHealthIncrementForStage(GrowthStage.YOUTH);
+        float pToDead = 1 - (1f * Math.min(getHealth(), minMatureHealth) / minMatureHealth);
+        g.setColor(ColorUtil.interpolate(Color.GREEN, Color.YELLOW, Color.RED, pToDead));
+        g.fillOval(drawRegion.x, drawRegion.y, drawRegion.width, drawRegion.height);
+
+        // a "flower" is drawn when the plant is healthy enough
+        int halfWidth = drawRegion.width / 2;
+        int halfHeight = drawRegion.height / 2;
+        float petalP = Math.min(0.5f, 1 - pToDead);
+        int petalWidth = (int) (petalP * halfWidth);
+        int petalHeight = (int) (petalP * halfHeight);
+        g.setColor(Color.WHITE);
+        g.fillOval(
+            drawRegion.x + halfWidth - petalWidth,
+            drawRegion.y + halfHeight - petalHeight,
+            2 * petalWidth,
+            2 * petalHeight);
+        break;
     }
-    g.fillOval(drawRegion.x, drawRegion.y, drawRegion.width, drawRegion.height);
+  }
+
+  protected int getAgeTo(GrowthStage stage) {
+    switch (stage) {
+      case MATURE:
+        return 10;
+      default:
+        return 0;
+    }
+  }
+
+  protected int getHealthIncrementForStage(GrowthStage stage) {
+    switch (stage) {
+      case YOUTH:
+        return 2;
+      default:
+        return 1;
+    }
   }
 
   public void updateGrowthStage() {
@@ -37,12 +88,7 @@ public class PlantEntity extends Entity {
 
     // Only grow if you have a water source nearby.
     if (hasWaterNearby()) {
-      switch (getGrowthStage()) {
-        case YOUTH:
-          incrementHealth(2);
-        case MATURE:
-          incrementHealth(1);
-      }
+      incrementHealth(getHealthIncrementForStage(getGrowthStage()));
     }
   }
 
