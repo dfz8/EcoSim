@@ -64,10 +64,13 @@ public abstract class Entity {
     age++;
     updateGrowthStage();
     incurCostOfLiving();
+    handleReproduction();
   }
 
   // When age changes, entity may enter different growth stage
   public abstract void updateGrowthStage();
 
   public abstract void incurCostOfLiving();
+
+  public abstract void handleReproduction();
 }

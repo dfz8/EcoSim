@@ -6,6 +6,9 @@ import java.util.LinkedList;
 
 public class WorldUtil {
 
+  /**
+   * Return list of coordinates of tiles that are valid coordinates on the map.
+   */
   public static LinkedList<Vec2d> getValidNearbySquares(
       WorldMap worldMap,
       int curR,

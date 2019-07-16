@@ -16,6 +16,8 @@ public class WorldMap {
   private LinkedList<Entity> entityList;
 
   private int mMaxHeight;
+  private LinkedList<Entity> queuedUpAdditions;
+  private boolean isInUpdate;
 
   public WorldMap(String mapId, int[][] terrainMap, int[][] elevationMap) {
     mMapId = mapId;
@@ -24,6 +26,7 @@ public class WorldMap {
     this.entityMap = new Entity[terrainMap.length][terrainMap[0].length];
 
     entityList = new LinkedList<>();
+    queuedUpAdditions = new LinkedList<>();
     updateMetadata();
   }
 
@@ -67,27 +70,51 @@ public class WorldMap {
   }
 
 
+  /**
+   * Adds {@param entity} to the map if the location is not currently occupied.
+   *
+   * @return if the entity was successfully added or not.
+   */
   public boolean addEntity(Entity entity, int r, int c) {
-    if (entityMap[r][c] == null) {
+    if (isInUpdate) {
+      for (Entity e : queuedUpAdditions) {
+        if (e.getCurR() == r && e.getCurC() == c) {
+          return false;
+        }
+      }
+    }
+    if (entityMap[r][c] != null) {
+      return false;
+    }
+
+    if (isInUpdate) {
+      queuedUpAdditions.add(entity);
+    } else {
       entityMap[r][c] = entity;
       entityList.add(entity);
-      return true;
     }
-    return false;
+    return true;
   }
 
   public void updateEntities() {
+    isInUpdate = true;
     LinkedList<Entity> entitiesToRemove = new LinkedList<>();
     for (Entity entity : entityList) {
       entity.update();
-      if(entity.getHealth() < 0) {
+      if (entity.getHealth() < 0) {
         entitiesToRemove.add(entity);
       }
     }
 
-    for(Entity entity : entitiesToRemove) {
+    for (Entity entity : entitiesToRemove) {
       removeEntity(entity);
     }
+    isInUpdate = false;
+
+    for (Entity entity : queuedUpAdditions) {
+      addEntity(entity, entity.getCurR(), entity.getCurC());
+    }
+    queuedUpAdditions.clear();
   }
 
   public void removeEntity(Entity entity) {

@@ -11,14 +11,28 @@ import java.awt.*;
 import java.util.LinkedList;
 
 public class PlantEntity extends Entity {
-  private LinkedList<Vec2d> importantTilesToTrack;
+  private final int germinationCooldown;
+
+  private LinkedList<Vec2d> possibleTilesWithWater;
+  private LinkedList<Vec2d> possibleTilesForSpawn;
   private int plantRootDepth;
+
+  private int seedDistributionRadius;
+  private int lastTimeGerminated;
+  private float seedPercentage;
 
   public PlantEntity(WorldMap worldMap, int initR, int initC) {
     super(worldMap, initR, initC, 20);
-
-    importantTilesToTrack = WorldUtil.getValidNearbySquares(worldMap, initR, initC, 3);
     plantRootDepth = 2;
+    seedDistributionRadius = 3;
+    germinationCooldown = 5;
+
+    possibleTilesWithWater = WorldUtil.getValidNearbySquares(worldMap, initR, initC, 3);
+    possibleTilesForSpawn = WorldUtil.getValidNearbySquares(
+        worldMap,
+        initR,
+        initC,
+        seedDistributionRadius);
   }
 
   @Override
@@ -84,6 +98,8 @@ public class PlantEntity extends Entity {
   public void updateGrowthStage() {
     if (getAge() > 10 && getGrowthStage() != GrowthStage.MATURE) {
       setGrowthStage(GrowthStage.MATURE);
+    } else if (getGrowthStage() == GrowthStage.MATURE) {
+      seedPercentage += 0.5 * Math.random();
     }
 
     // Only grow if you have a water source nearby.
@@ -100,11 +116,40 @@ public class PlantEntity extends Entity {
     }
   }
 
+  public void handleReproduction() {
+    if (shouldGermanate()) {
+      spread();
+    }
+  }
+
+  private boolean shouldGermanate() {
+    return getAge() >= lastTimeGerminated + germinationCooldown && seedPercentage > 1;
+  }
+
+  private void spread() {
+    lastTimeGerminated = getAge();
+
+    // try and spread the seed to nearby tiles. Germination is only successful if the tile is not
+    // already occupied by some other entity.
+    WorldMap map = getWorldMap();
+    while (seedPercentage > 1) {
+      seedPercentage -= 1;
+      Vec2d coord = possibleTilesForSpawn.get(
+          (int) (possibleTilesForSpawn.size() * Math.random()));
+      if (map.terrainMap[coord.x][coord.y] == TerrainType.GROUND) {
+        if (map.entityMap[coord.x][coord.y] == null) {
+          map.addEntity(new PlantEntity(map, coord.x, coord.y), coord.x, coord.y);
+        }
+      }
+    }
+  }
+
+
   private boolean hasWaterNearby() {
     WorldMap map = getWorldMap();
     int elevationDifference;
     int currentElevation = map.elevationMap[getCurR()][getCurC()];
-    for (Vec2d vec : importantTilesToTrack) {
+    for (Vec2d vec : possibleTilesWithWater) {
       if (map.terrainMap[vec.x][vec.y] == TerrainType.WATER) {
         elevationDifference = currentElevation - map.elevationMap[vec.x][vec.y];
         if (elevationDifference <= plantRootDepth) {
