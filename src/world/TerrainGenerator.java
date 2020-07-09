@@ -1,8 +1,8 @@
-package world;
+package src.world;
 
-import entity.PlantEntity;
-import util.WorldUtil;
-import util.Vec2d;
+import src.entity.PlantEntity;
+import src.util.WorldUtil;
+import src.util.Vec2d;
 
 import java.util.LinkedList;
 

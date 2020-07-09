@@ -1,6 +1,6 @@
-package world;
+package src.world;
 
-import util.Rect2d;
+import src.util.Rect2d;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;

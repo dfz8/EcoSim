@@ -1,6 +1,6 @@
-package world;
+package src.world;
 
-import entity.Entity;
+import src.entity.Entity;
 
 import java.io.File;
 import java.io.FileWriter;

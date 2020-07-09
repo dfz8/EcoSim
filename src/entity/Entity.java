@@ -1,7 +1,7 @@
-package entity;
+package src.entity;
 
-import util.Rect2d;
-import world.WorldMap;
+import src.util.Rect2d;
+import src.world.WorldMap;
 
 import java.awt.*;
 

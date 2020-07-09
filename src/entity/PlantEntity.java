@@ -1,11 +1,11 @@
-package entity;
+package src.entity;
 
-import util.ColorUtil;
-import util.Rect2d;
-import util.Vec2d;
-import util.WorldUtil;
-import world.TerrainType;
-import world.WorldMap;
+import src.util.ColorUtil;
+import src.util.Rect2d;
+import src.util.Vec2d;
+import src.util.WorldUtil;
+import src.world.TerrainType;
+import src.world.WorldMap;
 
 import java.awt.*;
 import java.util.LinkedList;

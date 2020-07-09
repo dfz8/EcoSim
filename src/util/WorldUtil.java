@@ -1,6 +1,6 @@
-package util;
+package src.util;
 
-import world.WorldMap;
+import src.world.WorldMap;
 
 import java.util.LinkedList;
 

@@ -1,4 +1,4 @@
-package util;
+package src.util;
 
 import java.awt.*;
 import java.util.HashMap;

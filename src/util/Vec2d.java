@@ -1,4 +1,4 @@
-package util;
+package src.util;
 
 public class Vec2d {
   public int x;

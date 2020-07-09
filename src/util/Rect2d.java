@@ -1,4 +1,4 @@
-package util;
+package src.util;
 
 public class Rect2d {
   public int x;
