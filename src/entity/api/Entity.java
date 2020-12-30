@@ -1,7 +1,7 @@
-package src.entity;
+package entity.api;
 
-import src.util.Rect2d;
-import src.world.WorldMap;
+import util.Rect2d;
+import world.WorldMap;
 
 import java.awt.*;
 
@@ -61,6 +61,9 @@ public abstract class Entity {
   public abstract void draw(Graphics g, Rect2d drawRegion);
 
   public void update() {
+    if (getHealth() <= 0) {
+      return;
+    }
     age++;
     updateGrowthStage();
     incurCostOfLiving();

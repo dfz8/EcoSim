@@ -31,6 +31,8 @@ public class WorldVisualizer {
     private JButton stepButton;
     private JLabel stepCountLabel;
     private int timeStep;
+    private JButton autoPlayButton;
+    private Timer timer;
 
     private WorldPanel(WorldMap map) {
       mImage = new BufferedImage(
@@ -65,10 +67,25 @@ public class WorldVisualizer {
       stepButton.addActionListener(this);
       stepCountLabel = new JLabel("Time step: " + timeStep);
 
+      timer = new Timer(100, e ->
+          WorldPanel.this.actionPerformed(e)
+      );
+      autoPlayButton = new JButton("Play");
+      autoPlayButton.addActionListener((ActionEvent e) -> {
+        if ("Play".equals(autoPlayButton.getText())) {
+            timer.start();
+            autoPlayButton.setText("Pause");
+        } else {
+          timer.stop();
+          autoPlayButton.setText("Play");
+        }
+      });
+
       add(elevationSliceSlider);
       add(seeAllBelowCheckBox);
       add(stepButton);
       add(stepCountLabel);
+      add(autoPlayButton);
     }
 
     public void paintComponent(Graphics g) {

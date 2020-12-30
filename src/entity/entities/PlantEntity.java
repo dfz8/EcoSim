@@ -1,11 +1,13 @@
-package src.entity;
+package entity.entities;
 
-import src.util.ColorUtil;
-import src.util.Rect2d;
-import src.util.Vec2d;
-import src.util.WorldUtil;
-import src.world.TerrainType;
-import src.world.WorldMap;
+import entity.api.Entity;
+import entity.api.GrowthStage;
+import util.ColorUtil;
+import util.Rect2d;
+import util.Vec2d;
+import util.WorldUtil;
+import world.TerrainType;
+import world.WorldMap;
 
 import java.awt.*;
 import java.util.LinkedList;
@@ -40,6 +42,10 @@ public class PlantEntity extends Entity {
     // Plant color in growth is white --> green
     // Plant health trends color to yellow then red.
     switch (getGrowthStage()) {
+      case DEAD:
+        g.setColor(Color.ORANGE);
+        g.fillOval(drawRegion.x, drawRegion.y, drawRegion.width, drawRegion.height);
+        break;
       case YOUTH:
         int minYouthHealth = getAge() * getHealthIncrementForStage(GrowthStage.YOUTH);
         float healthP = 1 - (1f * Math.min(getHealth(), minYouthHealth) / minYouthHealth);
@@ -90,8 +96,10 @@ public class PlantEntity extends Entity {
     switch (stage) {
       case YOUTH:
         return 2;
-      default:
+      case MATURE:
         return 1;
+      default:
+        return 0;
     }
   }
 
@@ -143,7 +151,6 @@ public class PlantEntity extends Entity {
       }
     }
   }
-
 
   private boolean hasWaterNearby() {
     WorldMap map = getWorldMap();

@@ -1,6 +1,7 @@
-package src.entity;
+package entity.api;
 
 public enum GrowthStage {
   YOUTH,
-  MATURE
+  MATURE,
+  DEAD
 }
