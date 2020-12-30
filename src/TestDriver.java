@@ -1,8 +1,6 @@
-package src;
-
-import src.world.TerrainGenerator;
-import src.world.WorldMap;
-import src.world.WorldVisualizer;
+import world.TerrainGenerator;
+import world.WorldMap;
+import world.WorldVisualizer;
 
 public class TestDriver {
 

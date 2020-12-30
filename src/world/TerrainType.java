@@ -1,4 +1,4 @@
-package src.world;
+package world;
 
 import java.awt.*;
 import java.util.HashMap;
