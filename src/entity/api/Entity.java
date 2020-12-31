@@ -6,9 +6,12 @@ import world.WorldMap;
 import java.awt.*;
 
 public abstract class Entity {
+  static int MOVES_PER_AGE = 10;
 
+  private int lifeUpdateCounter;
   private int curR;
   private int curC;
+  private int direction;
 
   private int age;
 
@@ -32,6 +35,26 @@ public abstract class Entity {
 
   public int getCurC() {
     return curC;
+  }
+
+  public void moveInDirection(int numSteps) {
+    int dr = 0;
+    int dc = 0;
+    switch (direction) {
+      case 0: // up
+        dr = -numSteps;
+        break;
+      case 1: // right
+        dc = numSteps;
+        break;
+      case 2: // down
+        dr = numSteps;
+        break;
+      default: // left
+        dc = -numSteps;
+        break;
+    }
+    // if entity already in square, then turn left/right
   }
 
   public int getAge() {
@@ -64,6 +87,12 @@ public abstract class Entity {
     if (getHealth() <= 0) {
       return;
     }
+    if (++lifeUpdateCounter < MOVES_PER_AGE) {
+      move();
+      return;
+    }
+    move();
+    lifeUpdateCounter = 0;
     age++;
     updateGrowthStage();
     incurCostOfLiving();
@@ -76,4 +105,6 @@ public abstract class Entity {
   public abstract void incurCostOfLiving();
 
   public abstract void handleReproduction();
+
+  public abstract void move();
 }

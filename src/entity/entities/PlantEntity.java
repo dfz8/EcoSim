@@ -130,6 +130,11 @@ public class PlantEntity extends Entity {
     }
   }
 
+  @Override
+  public void move() {
+    // plants don't move :^)
+  }
+
   private boolean shouldGermanate() {
     return getAge() >= lastTimeGerminated + germinationCooldown && seedPercentage > 1;
   }
@@ -145,7 +150,7 @@ public class PlantEntity extends Entity {
       Vec2d coord = possibleTilesForSpawn.get(
           (int) (possibleTilesForSpawn.size() * Math.random()));
       if (map.terrainMap[coord.x][coord.y] == TerrainType.GROUND) {
-        if (map.entityMap[coord.x][coord.y] == null) {
+        if (map.getEntityAtPosition(coord.x, coord.y) == null) {
           map.addEntity(new PlantEntity(map, coord.x, coord.y), coord.x, coord.y);
         }
       }

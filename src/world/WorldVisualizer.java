@@ -1,5 +1,6 @@
 package world;
 
+import entity.api.Entity;
 import util.Rect2d;
 
 import javax.swing.*;
@@ -73,8 +74,8 @@ public class WorldVisualizer {
       autoPlayButton = new JButton("Play");
       autoPlayButton.addActionListener((ActionEvent e) -> {
         if ("Play".equals(autoPlayButton.getText())) {
-            timer.start();
-            autoPlayButton.setText("Pause");
+          timer.start();
+          autoPlayButton.setText("Pause");
         } else {
           timer.stop();
           autoPlayButton.setText("Play");
@@ -98,6 +99,10 @@ public class WorldVisualizer {
           drawBlock(r, c);
         }
       }
+
+      for (Entity e : mMap.entityList) {
+        e.draw(mGraphics, getScreenPosition(e.getCurR(), e.getCurC()));
+      }
     }
 
     private void drawSlice(int elevation) {
@@ -109,6 +114,11 @@ public class WorldVisualizer {
               ? mMap.elevationMap[r][c] <= elevation
               : mMap.elevationMap[r][c] == elevation) {
             drawBlock(r, c);
+
+            Entity e = mMap.getEntityAtPosition(r, c);
+            if (e != null) {
+              e.draw(mGraphics, getScreenPosition(r, c));
+            }
           }
         }
       }
@@ -125,14 +135,14 @@ public class WorldVisualizer {
 
     private void drawBlock(int r, int c) {
       setColorForTile(r, c);
+      Rect2d drawRect = getScreenPosition(r, c);
+      mGraphics.fillRect(drawRect.x, drawRect.y, drawRect.width, drawRect.height);
+    }
 
+    private Rect2d getScreenPosition(int r, int c) {
       int x = xStartBuffer + r * xBlockWidth;
       int y = yStartBuffer + c * yBlockWidth;
-
-      mGraphics.fillRect(x, y, xBlockWidth, yBlockWidth);
-      if (mMap.entityMap[r][c] != null) {
-        mMap.entityMap[r][c].draw(mGraphics, new Rect2d(x, y, xBlockWidth, yBlockWidth));
-      }
+      return new Rect2d(x, y, xBlockWidth, yBlockWidth);
     }
 
     @Override

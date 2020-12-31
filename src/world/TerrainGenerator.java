@@ -1,5 +1,6 @@
 package world;
 
+import entity.entities.BunnyEntity;
 import entity.entities.PlantEntity;
 import util.WorldUtil;
 import util.Vec2d;
@@ -17,6 +18,7 @@ public class TerrainGenerator {
     floodWaterTable(worldMap, worldMap.getMaxHeight() / 3);
     flatten(worldMap, 3);
     seedPlants(worldMap);
+    seedAnimals(worldMap);
 
     return worldMap;
   }
@@ -161,8 +163,21 @@ public class TerrainGenerator {
         successAdds++;
       }
     }
-
     log("Planted " + seeds + " seeds, " + successAdds + " germinated.");
+  }
+
+  private static void seedAnimals(WorldMap map) {
+    int animals = 2;
+    int r, c;
+    int a = 0;
+    while (a < animals) {
+      r = rGen.getRandomInt();
+      c = cGen.getRandomInt();
+      if (map.terrainMap[r][c] != TerrainType.WATER
+          && map.addEntity(new BunnyEntity(map, r, c), r, c)) {
+        a++;
+      }
+    }
   }
 
 

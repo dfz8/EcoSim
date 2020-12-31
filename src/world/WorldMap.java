@@ -12,8 +12,7 @@ public class WorldMap {
   private final String mMapId;
   public int[][] terrainMap;
   public int[][] elevationMap;
-  public Entity[][] entityMap;
-  private LinkedList<Entity> entityList;
+  public LinkedList<Entity> entityList;
 
   private int mMaxHeight;
   private LinkedList<Entity> queuedUpAdditions;
@@ -23,8 +22,6 @@ public class WorldMap {
     mMapId = mapId;
     this.terrainMap = terrainMap;
     this.elevationMap = elevationMap;
-    this.entityMap = new Entity[terrainMap.length][terrainMap[0].length];
-
     entityList = new LinkedList<>();
     queuedUpAdditions = new LinkedList<>();
     updateMetadata();
@@ -83,14 +80,13 @@ public class WorldMap {
         }
       }
     }
-    if (entityMap[r][c] != null) {
+    if (getEntityAtPosition(r, c) != null) {
       return false;
     }
 
     if (isInUpdate) {
       queuedUpAdditions.add(entity);
     } else {
-      entityMap[r][c] = entity;
       entityList.add(entity);
     }
     return true;
@@ -118,8 +114,15 @@ public class WorldMap {
   }
 
   public void removeEntity(Entity entity) {
-    if (entityList.remove(entity)) {
-      entityMap[entity.getCurR()][entity.getCurC()] = null;
+    entityList.remove(entity);
+  }
+
+  public Entity getEntityAtPosition(int r, int c) {
+    for (Entity e : entityList) {
+      if (e.getCurR() == r && e.getCurC() == c) {
+        return e;
+      }
     }
+    return null;
   }
 }
