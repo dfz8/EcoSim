@@ -40,21 +40,44 @@ public abstract class Entity {
   public void moveInDirection(int numSteps) {
     int dr = 0;
     int dc = 0;
+    boolean needsToTurn = false;
     switch (direction) {
       case 0: // up
         dr = -numSteps;
+        while (dr != 0 && (worldMap.hasEntityAtPosition(curR + dr, curC)) || curR + dr < 0) {
+          dr++;
+          needsToTurn = true;
+        }
         break;
       case 1: // right
         dc = numSteps;
+        while (dc != 0 && worldMap.hasEntityAtPosition(curR, curC + dc)) {
+          dc--;
+          needsToTurn = true;
+        }
         break;
       case 2: // down
         dr = numSteps;
+        while (dr != 0 && worldMap.hasEntityAtPosition(curR + dr, curC)) {
+          dr--;
+          needsToTurn = true;
+        }
         break;
       default: // left
         dc = -numSteps;
+        while (dc != 0 && (worldMap.hasEntityAtPosition(curR, curC + dc) || curC + dc < 0)) {
+          dc++;
+          needsToTurn = true;
+        }
         break;
     }
+    curR += dr;
+    curC += dc;
     // if entity already in square, then turn left/right
+    if (needsToTurn) {
+      direction += 2 * ((int) (Math.random() + 0.5)) - 1; // -1 or 1
+      direction = (direction + 4) % 4;
+    }
   }
 
   public int getAge() {

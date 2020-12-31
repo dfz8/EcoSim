@@ -125,4 +125,8 @@ public class WorldMap {
     }
     return null;
   }
+
+  public boolean hasEntityAtPosition(int r, int c) {
+    return getEntityAtPosition(r, c) != null;
+  }
 }
