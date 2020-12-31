@@ -2,12 +2,13 @@ package entity.entities;
 
 import entity.api.Entity;
 import entity.api.Goal;
+import entity.api.Traits;
 import util.Rect2d;
 import world.WorldMap;
 
 import java.awt.*;
 
-public class BunnyEntity extends Entity {
+public class BunnyEntity extends Entity implements Traits.Terrestrial, Traits.SpaceOccupying {
 
   private Goal currentGoal = Goal.NONE;
   private int idleCounter;
@@ -18,12 +19,12 @@ public class BunnyEntity extends Entity {
 
   @Override
   public void draw(Graphics g, Rect2d drawRegion) {
-    g.setColor(Color.BLACK);
-    g.drawOval(
-        drawRegion.x + drawRegion.width / 4,
-        drawRegion.y,
-        drawRegion.width / 2,
-        drawRegion.height);
+    //    g.setColor(Color.BLACK);
+    //    g.drawOval(
+    //        drawRegion.x + drawRegion.width / 4,
+    //        drawRegion.y,
+    //        drawRegion.width / 2,
+    //        drawRegion.height);
     switch (getGrowthStage()) {
       case YOUTH:
         g.setColor(Color.WHITE);
@@ -32,11 +33,19 @@ public class BunnyEntity extends Entity {
         g.setColor(Color.RED);
         break;
     }
-    g.fillOval(
-        drawRegion.x + drawRegion.width / 4,
-        drawRegion.y,
-        drawRegion.width / 2,
-        drawRegion.height);
+    if (getDirection() % 2 == 0) {
+      g.fillOval(
+          drawRegion.x,
+          drawRegion.y + drawRegion.height / 4,
+          drawRegion.width,
+          drawRegion.height / 2);
+    } else {
+      g.fillOval(
+          drawRegion.x + drawRegion.width / 4,
+          drawRegion.y,
+          drawRegion.width / 2,
+          drawRegion.height);
+    }
   }
 
   @Override

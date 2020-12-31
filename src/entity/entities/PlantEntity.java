@@ -15,18 +15,16 @@ import java.util.LinkedList;
 public class PlantEntity extends Entity {
   private final int germinationCooldown;
 
-  private LinkedList<Vec2d> possibleTilesWithWater;
-  private LinkedList<Vec2d> possibleTilesForSpawn;
-  private int plantRootDepth;
+  private final LinkedList<Vec2d> possibleTilesWithWater;
+  private final LinkedList<Vec2d> possibleTilesForSpawn;
+  private final int plantRootDepth;
 
-  private int seedDistributionRadius;
   private int lastTimeGerminated;
   private float seedPercentage;
 
   public PlantEntity(WorldMap worldMap, int initR, int initC) {
     super(worldMap, initR, initC, 20);
     plantRootDepth = 2;
-    seedDistributionRadius = 3;
     germinationCooldown = 5;
 
     possibleTilesWithWater = WorldUtil.getValidNearbySquares(worldMap, initR, initC, 3);
@@ -34,7 +32,7 @@ public class PlantEntity extends Entity {
         worldMap,
         initR,
         initC,
-        seedDistributionRadius);
+        3);
   }
 
   @Override
@@ -151,7 +149,7 @@ public class PlantEntity extends Entity {
           (int) (possibleTilesForSpawn.size() * Math.random()));
       if (map.terrainMap[coord.x][coord.y] == TerrainType.GROUND) {
         if (map.getEntityAtPosition(coord.x, coord.y) == null) {
-          map.addEntity(new PlantEntity(map, coord.x, coord.y), coord.x, coord.y);
+          map.addEntity(new PlantEntity(map, coord.x, coord.y), true /* isNewborn */);
         }
       }
     }

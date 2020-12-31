@@ -1,6 +1,7 @@
 package world;
 
 import entity.api.Entity;
+import entity.api.Traits;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -15,15 +16,13 @@ public class WorldMap {
   public LinkedList<Entity> entityList;
 
   private int mMaxHeight;
-  private LinkedList<Entity> queuedUpAdditions;
-  private boolean isInUpdate;
+  private final LinkedList<Entity> newbornsList = new LinkedList<>();
 
   public WorldMap(String mapId, int[][] terrainMap, int[][] elevationMap) {
     mMapId = mapId;
     this.terrainMap = terrainMap;
     this.elevationMap = elevationMap;
     entityList = new LinkedList<>();
-    queuedUpAdditions = new LinkedList<>();
     updateMetadata();
   }
 
@@ -66,51 +65,33 @@ public class WorldMap {
     }
   }
 
-
   /**
    * Adds {@param entity} to the map if the location is not currently occupied.
    *
    * @return if the entity was successfully added or not.
    */
-  public boolean addEntity(Entity entity, int r, int c) {
-    if (isInUpdate) {
-      for (Entity e : queuedUpAdditions) {
-        if (e.getCurR() == r && e.getCurC() == c) {
-          return false;
-        }
-      }
-    }
-    if (getEntityAtPosition(r, c) != null) {
+  public boolean addEntity(Entity entity, boolean isNewborn) {
+    Entity e = getEntityAtPosition(entity.getCurR(), entity.getCurC());
+    if (e != null && entity instanceof Traits.SpaceOccupying
+        == e instanceof Traits.SpaceOccupying) {
       return false;
     }
-
-    if (isInUpdate) {
-      queuedUpAdditions.add(entity);
-    } else {
-      entityList.add(entity);
+    if (isNewborn) {
+      return newbornsList.add(entity);
     }
-    return true;
+    return entityList.add(entity);
   }
 
   public void updateEntities() {
-    isInUpdate = true;
-    LinkedList<Entity> entitiesToRemove = new LinkedList<>();
-    for (Entity entity : entityList) {
-      entity.update();
-      if (entity.getHealth() < 0) {
-        entitiesToRemove.add(entity);
-      }
+    for (Entity e : entityList) {
+      e.update();
     }
 
-    for (Entity entity : entitiesToRemove) {
-      removeEntity(entity);
+    for (Entity ne : newbornsList) {
+      // no longer need to delay addition now that we aren't modifying the list
+      addEntity(ne, false /* isNewborn */);
     }
-    isInUpdate = false;
-
-    for (Entity entity : queuedUpAdditions) {
-      addEntity(entity, entity.getCurR(), entity.getCurC());
-    }
-    queuedUpAdditions.clear();
+    newbornsList.clear();
   }
 
   public void removeEntity(Entity entity) {
@@ -126,7 +107,8 @@ public class WorldMap {
     return null;
   }
 
-  public boolean hasEntityAtPosition(int r, int c) {
-    return getEntityAtPosition(r, c) != null;
+  public boolean hasEmptySpace(int r, int c) {
+    Entity e = getEntityAtPosition(r, c);
+    return !(e instanceof Traits.SpaceOccupying);
   }
 }

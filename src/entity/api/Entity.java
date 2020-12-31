@@ -1,6 +1,7 @@
 package entity.api;
 
 import util.Rect2d;
+import world.TerrainType;
 import world.WorldMap;
 
 import java.awt.*;
@@ -19,7 +20,7 @@ public abstract class Entity {
   private int health;
   private GrowthStage growthStage = GrowthStage.YOUTH;
 
-  private WorldMap worldMap;
+  private final WorldMap worldMap;
 
   public Entity(WorldMap worldMap, int initR, int initC, int startingHealth) {
     this.worldMap = worldMap;
@@ -37,6 +38,23 @@ public abstract class Entity {
     return curC;
   }
 
+  public int getDirection() {
+    return direction;
+  }
+
+  private boolean isValidSpaceToMoveTo(int r, int c) {
+    if (r < 0 || c < 0 || r >= worldMap.terrainMap.length || c >= worldMap.terrainMap[r].length) {
+      return false;
+    }
+    if (!worldMap.hasEmptySpace(r, c)) {
+      return false;
+    }
+    if (this instanceof Traits.Terrestrial && worldMap.terrainMap[r][c] == TerrainType.WATER) {
+      return false;
+    }
+    return true;
+  }
+
   public void moveInDirection(int numSteps) {
     int dr = 0;
     int dc = 0;
@@ -44,28 +62,28 @@ public abstract class Entity {
     switch (direction) {
       case 0: // up
         dr = -numSteps;
-        while (dr != 0 && (worldMap.hasEntityAtPosition(curR + dr, curC)) || curR + dr < 0) {
+        while (dr != 0 && !isValidSpaceToMoveTo(curR + dr, curC)) {
           dr++;
           needsToTurn = true;
         }
         break;
       case 1: // right
         dc = numSteps;
-        while (dc != 0 && worldMap.hasEntityAtPosition(curR, curC + dc)) {
+        while (dc != 0 && !isValidSpaceToMoveTo(curR, curC + dc)) {
           dc--;
           needsToTurn = true;
         }
         break;
       case 2: // down
         dr = numSteps;
-        while (dr != 0 && worldMap.hasEntityAtPosition(curR + dr, curC)) {
+        while (dr != 0 && !isValidSpaceToMoveTo(curR + dr, curC)) {
           dr--;
           needsToTurn = true;
         }
         break;
       default: // left
         dc = -numSteps;
-        while (dc != 0 && (worldMap.hasEntityAtPosition(curR, curC + dc) || curC + dc < 0)) {
+        while (dc != 0 && !isValidSpaceToMoveTo(curR, curC + dc)) {
           dc++;
           needsToTurn = true;
         }

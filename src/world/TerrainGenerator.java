@@ -159,7 +159,7 @@ public class TerrainGenerator {
       r = rGen.getRandomInt();
       c = cGen.getRandomInt();
       if (map.terrainMap[r][c] != TerrainType.WATER
-          && map.addEntity(new PlantEntity(map, r, c), r, c)) {
+          && map.addEntity(new PlantEntity(map, r, c), false /* isNewborn */)) {
         successAdds++;
       }
     }
@@ -174,7 +174,7 @@ public class TerrainGenerator {
       r = rGen.getRandomInt();
       c = cGen.getRandomInt();
       if (map.terrainMap[r][c] != TerrainType.WATER
-          && map.addEntity(new BunnyEntity(map, r, c), r, c)) {
+          && map.addEntity(new BunnyEntity(map, r, c), false /* isNewborn */)) {
         a++;
       }
     }
