@@ -93,9 +93,13 @@ public abstract class Entity {
     curC += dc;
     // if entity already in square, then turn left/right
     if (needsToTurn) {
-      direction += 2 * ((int) (Math.random() + 0.5)) - 1; // -1 or 1
-      direction = (direction + 4) % 4;
+      turn();
     }
+  }
+
+  public void turn() {
+    direction += 2 * ((int) (Math.random() + 0.5)) - 1; // -1 or 1
+    direction = (direction + 4) % 4;
   }
 
   public int getAge() {
@@ -137,6 +141,12 @@ public abstract class Entity {
     age++;
     updateGrowthStage();
     incurCostOfLiving();
+
+    if (getHealth() <= 0) {
+      setGrowthStage(GrowthStage.DEAD);
+      return;
+    }
+
     handleReproduction();
   }
 

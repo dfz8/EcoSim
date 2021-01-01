@@ -124,7 +124,7 @@ public class PlantEntity extends Entity {
   }
 
   public void handleReproduction() {
-    if (shouldGermanate()) {
+    if (shouldGerminate()) {
       spread();
     }
   }
@@ -134,8 +134,10 @@ public class PlantEntity extends Entity {
     // plants don't move :^)
   }
 
-  private boolean shouldGermanate() {
-    return getAge() >= lastTimeGerminated + germinationCooldown && seedPercentage > 1;
+  private boolean shouldGerminate() {
+    return getAge() >= lastTimeGerminated + germinationCooldown
+           && seedPercentage > 1
+           && getHealth() > 10;
   }
 
   private void spread() {
@@ -158,6 +160,7 @@ public class PlantEntity extends Entity {
         }
         if (canAddToSpace) {
           map.addEntity(new PlantEntity(map, coord.x, coord.y), true /* isNewborn */);
+          incrementHealth(-2);
         }
       }
     }

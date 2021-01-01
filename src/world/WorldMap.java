@@ -2,6 +2,7 @@ package world;
 
 import entity.api.Entity;
 import entity.api.Traits;
+import util.Vec2d;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -77,15 +78,7 @@ public class WorldMap {
     LinkedList<Entity> entities = getEntitiesAtPosition(entity.getCurR(), entity.getCurC());
 
     // check if valid space for this type of entity
-    boolean isSpaceOccupying = entity instanceof Traits.SpaceOccupying;
-    boolean canAdd = true;
-    for (Entity e : entities) {
-      if (isSpaceOccupying == e instanceof Traits.SpaceOccupying) {
-        canAdd = false;
-        break;
-      }
-    }
-    if (!canAdd) {
+    if (!canAdd(entities, entity)) {
       return false;
     }
 
@@ -137,9 +130,33 @@ public class WorldMap {
     return entities;
   }
 
+  public LinkedList<Vec2d> getPossibleSpawnPoints(Entity entity) {
+    LinkedList<Vec2d> spots = new LinkedList<>();
+    for (int dr = -1; dr <= 1; dr++) {
+      for (int dc = -1; dc <= 1; dc++) {
+        if (dr == 0 && dc == 0) {
+          continue;
+        }
+        if (canAdd(getEntitiesAtPosition(entity.getCurR() + dr, entity.getCurC() + dc), entity)) {
+          spots.add(new Vec2d(entity.getCurR() + dr, entity.getCurC() + dc));
+        }
+      }
+    }
+    return spots;
+  }
+
   public boolean hasEmptySpace(int r, int c) {
     for (Entity e : getEntitiesAtPosition(r, c)) {
       if (e instanceof Traits.SpaceOccupying) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private boolean canAdd(LinkedList<Entity> entitiesInLocation, Entity entity) {
+    for (Entity e : entitiesInLocation) {
+      if (entity instanceof Traits.SpaceOccupying == e instanceof Traits.SpaceOccupying) {
         return false;
       }
     }
