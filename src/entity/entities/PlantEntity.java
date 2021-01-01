@@ -2,6 +2,7 @@ package entity.entities;
 
 import entity.api.Entity;
 import entity.api.GrowthStage;
+import entity.api.Traits;
 import util.ColorUtil;
 import util.Rect2d;
 import util.Vec2d;
@@ -148,7 +149,14 @@ public class PlantEntity extends Entity {
       Vec2d coord = possibleTilesForSpawn.get(
           (int) (possibleTilesForSpawn.size() * Math.random()));
       if (map.terrainMap[coord.x][coord.y] == TerrainType.GROUND) {
-        if (map.getEntityAtPosition(coord.x, coord.y) == null) {
+        boolean canAddToSpace = true;
+        for (Entity e : map.getEntitiesAtPosition(coord.x, coord.y)) {
+          if (!(e instanceof Traits.SpaceOccupying)) {
+            canAddToSpace = false;
+            break;
+          }
+        }
+        if (canAddToSpace) {
           map.addEntity(new PlantEntity(map, coord.x, coord.y), true /* isNewborn */);
         }
       }

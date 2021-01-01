@@ -115,8 +115,7 @@ public class WorldVisualizer {
               : mMap.elevationMap[r][c] == elevation) {
             drawBlock(r, c);
 
-            Entity e = mMap.getEntityAtPosition(r, c);
-            if (e != null) {
+            for (Entity e : mMap.getEntitiesAtPosition(r, c)) {
               e.draw(mGraphics, getScreenPosition(r, c));
             }
           }

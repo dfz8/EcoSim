@@ -13,7 +13,10 @@ public class WorldMap {
   private final String mMapId;
   public int[][] terrainMap;
   public int[][] elevationMap;
-  public LinkedList<Entity> entityList;
+
+  public final LinkedList<Entity> entityList;
+  public final LinkedList<Entity> nonOccupyingEntityList = new LinkedList<>();
+  public final LinkedList<Entity> occupyingEntityList = new LinkedList<>();
 
   private int mMaxHeight;
   private final LinkedList<Entity> newbornsList = new LinkedList<>();
@@ -71,15 +74,31 @@ public class WorldMap {
    * @return if the entity was successfully added or not.
    */
   public boolean addEntity(Entity entity, boolean isNewborn) {
-    Entity e = getEntityAtPosition(entity.getCurR(), entity.getCurC());
-    if (e != null && entity instanceof Traits.SpaceOccupying
-        == e instanceof Traits.SpaceOccupying) {
+    LinkedList<Entity> entities = getEntitiesAtPosition(entity.getCurR(), entity.getCurC());
+
+    // check if valid space for this type of entity
+    boolean isSpaceOccupying = entity instanceof Traits.SpaceOccupying;
+    boolean canAdd = true;
+    for (Entity e : entities) {
+      if (isSpaceOccupying == e instanceof Traits.SpaceOccupying) {
+        canAdd = false;
+        break;
+      }
+    }
+    if (!canAdd) {
       return false;
     }
+
     if (isNewborn) {
       return newbornsList.add(entity);
     }
-    return entityList.add(entity);
+    if (entity instanceof Traits.SpaceOccupying) {
+      occupyingEntityList.add(entity);
+    } else {
+      nonOccupyingEntityList.add(entity);
+    }
+    entityList.add(entity);
+    return true;
   }
 
   public void updateEntities() {
@@ -96,19 +115,34 @@ public class WorldMap {
 
   public void removeEntity(Entity entity) {
     entityList.remove(entity);
+    if (entity instanceof Traits.SpaceOccupying) {
+      occupyingEntityList.remove(entity);
+    } else {
+      nonOccupyingEntityList.remove(entity);
+    }
   }
 
-  public Entity getEntityAtPosition(int r, int c) {
-    for (Entity e : entityList) {
+  public LinkedList<Entity> getEntitiesAtPosition(int r, int c) {
+    LinkedList<Entity> entities = new LinkedList<>();
+    for (Entity e : nonOccupyingEntityList) {
       if (e.getCurR() == r && e.getCurC() == c) {
-        return e;
+        entities.add(e);
       }
     }
-    return null;
+    for (Entity e : occupyingEntityList) {
+      if (e.getCurR() == r && e.getCurC() == c) {
+        entities.add(e);
+      }
+    }
+    return entities;
   }
 
   public boolean hasEmptySpace(int r, int c) {
-    Entity e = getEntityAtPosition(r, c);
-    return !(e instanceof Traits.SpaceOccupying);
+    for (Entity e : getEntitiesAtPosition(r, c)) {
+      if (e instanceof Traits.SpaceOccupying) {
+        return false;
+      }
+    }
+    return true;
   }
 }

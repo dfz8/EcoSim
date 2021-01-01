@@ -19,12 +19,6 @@ public class BunnyEntity extends Entity implements Traits.Terrestrial, Traits.Sp
 
   @Override
   public void draw(Graphics g, Rect2d drawRegion) {
-    //    g.setColor(Color.BLACK);
-    //    g.drawOval(
-    //        drawRegion.x + drawRegion.width / 4,
-    //        drawRegion.y,
-    //        drawRegion.width / 2,
-    //        drawRegion.height);
     switch (getGrowthStage()) {
       case YOUTH:
         g.setColor(Color.WHITE);
